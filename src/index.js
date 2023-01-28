@@ -2,35 +2,59 @@ const { ApolloServer, gql } = require("apollo-server");
 
 
 const typeDefs = gql`
-  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
-
-  # This "Book" type defines the queryable fields for every book in our data source.
   type Book {
+    id: String  
     title: String
     author: String
   }
 
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
-    books: [Book]
+    Getbooks: [Book],
+    Getbook(id:String!):[Book]
+  }
+  type Mutation {
+      CreateBook(id: String!,title: String!, author: String!): Book
+      DeleteBook(id: String!): Book
+      UpdateBook(id: String!,title: String!, author: String!): Book 
   }
 `;
 
-const books = [
+let books = [
     {
+      id:"1",
       title: 'The Awakening',
       author: 'Kate Chopin',
     },
     {
+      id:"2",  
       title: 'City of Glass',
       author: 'Paul Auster',
     },
+    {
+       id:"3",  
+       title: 'Del amor y otros demonios',
+       author: 'Gabriel garcia Marquez',
+    }
   ];
   const resolvers = {
+    Mutation: {
+        CreateBook: (_,arg) => {books.push(arg); return arg},
+        DeleteBook: (_,arg) => { 
+                                 let finalbooks=books.filter(book => book.id != arg.id);
+                                 let bookdeleted = books.find(book => book.id == arg.id );   
+                                 books = [...finalbooks]; 
+                                 return bookdeleted
+                                },
+        UpdateBook:(_,arg) => {  let objIdx = books.findIndex(book => book.id == arg.id);
+                                 books[objIdx] = arg
+                                 return arg   
+             
+                              }                        
+
+    },  
     Query: {
-      books: () => books,
+      Getbooks: () => books,
+      Getbook: (_,arg) => books.find(number => number.id==arg.id)
     },
   };
 
